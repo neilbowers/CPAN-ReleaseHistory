@@ -172,6 +172,46 @@ The number of bytes in the file.
 
 =back
 
+=head2 Be aware
+
+When iterating over CPAN's history, you'll find that most distribution names reveal
+a clean release history. For example, JUERD did two releases of L<again>,
+which I then adopted:
+
+ J/JU/JUERD/again-0.01.tar.gz
+ J/JU/JUERD/again-0.02.tar.gz
+ N/NE/NEILB/again-0.03.tar.gz
+ N/NE/NEILB/again-0.04.tar.gz
+ N/NE/NEILB/again-0.05.tar.gz
+
+But you will also discover that there are various 'anomalies' in the history of CPAN releases.
+These are usually well in the past -- PAUSE and the related toolchains have evolved to
+prevent most of these.
+For example, here's the sequence of releases for distributions called 'enum':
+
+ Z/ZE/ZENIN/enum-1.008.tar.gz
+ Z/ZE/ZENIN/enum-1.009.tar.gz
+ Z/ZE/ZENIN/enum-1.010.tar.gz
+ Z/ZE/ZENIN/enum-1.011.tar.gz
+ N/NJ/NJLEON/enum-0.02.tar.gz
+ Z/ZE/ZENIN/enum-1.013.tar.gz
+ Z/ZE/ZENIN/enum-1.014.tar.gz
+ Z/ZE/ZENIN/enum-1.015.tar.gz
+ Z/ZE/ZENIN/enum-1.016.tar.gz
+ R/RO/ROODE/enum-0.01.tar.gz
+ N/NE/NEILB/enum-1.016_01.tar.gz
+ N/NE/NEILB/enum-1.02.tar.gz
+ N/NE/NEILB/enum-1.03.tar.gz
+ N/NE/NEILB/enum-1.04.tar.gz
+ N/NE/NEILB/enum-1.05.tar.gz
+ N/NE/NEILB/enum-1.06.tar.gz
+
+The L<enum> module was first released by ZENIN, and I (NEILB) recently adopted it.
+But you'll see that there have been two other releases of other modules (with similar aims).
+
+Depending on what you're trying to do, you might occasionally be surprised by the sequence
+of version numbers and maintainers.
+
 =head1 METHODS
 
 At the moment there is only one method, to create a release iterator.

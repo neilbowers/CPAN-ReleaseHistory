@@ -3,6 +3,8 @@ Revision history for Perl module CPAN::ReleaseHistory
 0.02 2014-02-06
     - Changed the sort order of local cache, so it's sorted on
       distname and then by release time.
+    - Noted in the doc that you may discover anomalies in
+      CPAN's release history.
 
 0.01 2014-02-05
     - First release to CPAN
