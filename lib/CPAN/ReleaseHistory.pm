@@ -76,6 +76,8 @@ sub _transform_and_cache
     my ($self, $filename) = @_;
     my ($in_fh, $out_fh);
     local $_;
+    my @lines;
+    my ($distinfo, $distname);
 
     open($in_fh,  '<:gzip', $filename);
     open($out_fh, '>',      $self->path);
@@ -85,14 +87,35 @@ sub _transform_and_cache
         next LINE unless m!^authors/id/!;
         next LINE if /\.(readme|meta) /;
         next LINE if m!/CHECKSUMS !;
+        next LINE unless /^\S+\s+\S+\s+\S+/;
 
+        chomp;
         s!^authors/id/!!;
 
-        print $out_fh $_;
+        my ($path, $time, $size) = split(/\s+/, $_);
+        $distinfo = CPAN::DistnameInfo->new($path);
+        $distname = defined($distinfo) && defined($distinfo->dist)
+                    ? $distinfo->dist
+                    : '';
+
+        push(@lines, [$distname, $path, $time, $size]);
+
     }
     close($in_fh);
-    close($out_fh);
     unlink($filename);
+
+    foreach my $line (sort by_dist_then_date @lines) {
+        printf $out_fh "%s %d %d\n", $line->[1], $line->[2], $line->[3];
+    }
+
+    close($out_fh);
+}
+
+sub by_dist_then_date
+{
+    return $a->[0] ne $b->[0]
+           ? $a->[0] cmp $b->[0]
+           : $a->[2] <=> $b->[2];
 }
 
 1;
@@ -103,7 +126,7 @@ CPAN::ReleaseHistory - information about all files ever released to CPAN
 
 =head1 SYNOPSIS
 
-  use CPAN::ReleaseHistory;
+  use CPAN::ReleaseHistory 0.02;
 
   my $history  = CPAN::ReleaseHistory->new();
   my $iterator = $history->release_iterator();
@@ -118,6 +141,9 @@ CPAN::ReleaseHistory - information about all files ever released to CPAN
 =head1 DESCRIPTION
 
 B<NOTE>: this is very much an alpha release. Any and all feedback appreciated.
+
+The internal caching format changed in 0.02, so you should make sure you have
+at least 0.02, using the C<use> line shown in the SYNOPSIS.
 
 This module provides an iterator that can be used to look at every file
 that has ever been released to CPAN, regardless of whether it is still on CPAN.
@@ -154,6 +180,13 @@ Other methods will be added as required / requested.
 =head2 release_iterator()
 
 See the SYNOPSIS.
+
+=head1 NOTES
+
+At the moment this module will use up a lot of memory: it grabs the remote BackPAN index,
+extracts the data it needs into memory, sorts it, then writes it to the local cache.
+If this is a problem then I'll look at another way of doing it. If it's a problem for you,
+then you should look at L<BackPAN::Index>.
 
 =head1 SEE ALSO
 
