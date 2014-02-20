@@ -1,5 +1,14 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.04 2014-02-20
+    - The tests were using // which requires 5.010. Changed that and
+      made dependent on 5.006.
+
+0.03 2014-02-19
+    - Added a well_formed option to the release iterator.
+      If true, then the iterator only returns releases where the distname
+      and author id could be determined by CPAN::DistnameInfo
+
 0.02 2014-02-06
     - Changed the sort order of local cache, so it's sorted on
       distname and then by release time.

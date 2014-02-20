@@ -16,9 +16,9 @@ my $history = CPAN::ReleaseHistory->new(path => 't/mini-release-history.txt');
 ok(defined($history), "instantiate CPAN::ReleaseHistory");
 
 #-----------------------------------------------------------------------
-# construct the iterator
+# construct the iterator, 'well formed' releases only
 #-----------------------------------------------------------------------
-my $iterator = $history->release_iterator();
+my $iterator = $history->release_iterator(well_formed => 1);
 
 ok(defined($iterator), 'create release iterator');
 
@@ -26,7 +26,6 @@ ok(defined($iterator), 'create release iterator');
 # Construct a string with info
 #-----------------------------------------------------------------------
 my $expected = <<"END_EXPECTED";
-undef 1333072261 5091
 CPAN-Testers-Reports-Counts 1391031339 10152
 CPAN-Testers-Reports-Counts 1391249171 10256
 Text-Markdown-PerlExtensions 1389461809 10951
