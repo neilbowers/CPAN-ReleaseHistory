@@ -27,11 +27,13 @@ while (my $release = $iterator->next_release) {
     my $year = (gmtime($release->timestamp))[5] + 1900;
     $by_year{$year}++;
 }
+die "No releases seen for $USER\n" if defined($USER) && keys(%by_year) == 0;
 
 my $max                      = (sort { $b <=> $a } values %by_year)[0];
 my $count_width              = (sort { $b <=> $a } map { length($_) } values %by_year)[0];
 my $scale                    = $max < $MAX_BAR_SIZE ? 1 : $max / $MAX_BAR_SIZE;
 my ($first_year, $last_year) = (sort keys %by_year)[0,-1];
+
 
 foreach my $year ($first_year .. $last_year) {
     printf " %d (%${count_width}d) %s\n",

@@ -1,5 +1,9 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.05 2014-02-20
+    - cpan-release-counts was barfing if user had no releases
+      RT#93183 from Martin Evans.
+
 0.04 2014-02-20
     - Added cpan-release-counts script for generating text graphs
       of release history, either of a user or across all users.
