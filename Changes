@@ -1,6 +1,8 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
 0.04 2014-02-20
+    - Added cpan-release-counts script for generating text graphs
+      of release history, either of a user or across all users.
     - The tests were using // which requires 5.010. Changed that and
       made dependent on 5.006.
 
