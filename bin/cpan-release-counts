@@ -11,33 +11,43 @@ use Getopt::Long;
 
 my $MAX_BAR_SIZE = 50;
 my $BAR_CHAR     = '#';
+my $SHOW_MONTHS  = 0;
+my $TARGET_YEAR;
 my $iterator     = CPAN::ReleaseHistory->new()->release_iterator(well_formed => 1);
 my $USER;
-my %by_year;
+my %counts;
 
-GetOptions('user|u=s', \$USER,
-           'char|c=s', \$BAR_CHAR,
-           'width|w=i', \$MAX_BAR_SIZE,
+GetOptions('user|u=s'  => \$USER,
+           'monthly|m' => \$SHOW_MONTHS,
+           'char|c=s'  => \$BAR_CHAR,
+           'width|w=i' => \$MAX_BAR_SIZE,
+           'year|y=i'  => \$TARGET_YEAR,
           ) || die "usage: $0 [-user PAUSE-ID] [-char <char>] [-width N]\n";
 
 $USER = uc($USER) if defined($USER);
 
 while (my $release = $iterator->next_release) {
     next if $USER && $release->distinfo->cpanid ne $USER;
-    my $year = (gmtime($release->timestamp))[5] + 1900;
-    $by_year{$year}++;
+    my @ts    = gmtime($release->timestamp);
+    my $year  = $ts[5] + 1900;
+    next if defined($TARGET_YEAR) && $year != $TARGET_YEAR;
+    my $month = $ts[4] + 1;
+    my $key   = $SHOW_MONTHS ? sprintf('%.4d%.2d', $year, $month) : $year;
+    $counts{$key}++;
 }
-die "No releases seen for $USER\n" if defined($USER) && keys(%by_year) == 0;
+die "No releases seen for $USER\n" if defined($USER) && keys(%counts) == 0;
 
-my $max                      = (sort { $b <=> $a } values %by_year)[0];
-my $count_width              = (sort { $b <=> $a } map { length($_) } values %by_year)[0];
-my $scale                    = $max < $MAX_BAR_SIZE ? 1 : $max / $MAX_BAR_SIZE;
-my ($first_year, $last_year) = (sort keys %by_year)[0,-1];
+my $max                    = (sort { $b <=> $a } values %counts)[0];
+my $count_width            = (sort { $b <=> $a } map { length($_) } values %counts)[0];
+my $scale                  = $max < $MAX_BAR_SIZE ? 1 : $max / $MAX_BAR_SIZE;
+my ($first_key, $last_key) = (sort keys %counts)[0,-1];
+my @keys                   = $first_key .. $last_key;
 
+@keys = grep { /(01|02|03|04|05|06|07|08|09|10|11|12)$/ } @keys if $SHOW_MONTHS;
 
-foreach my $year ($first_year .. $last_year) {
+foreach my $year (@keys) {
     printf " %d (%${count_width}d) %s\n",
-           $year, $by_year{$year}||0, $BAR_CHAR x (($by_year{$year}||0) / $scale);
+           $year, $counts{$year}||0, $BAR_CHAR x (($counts{$year}||0) / $scale);
 }
 
 =head1 NAME
@@ -46,7 +56,7 @@ cpan-release-counts - display graph of CPAN releases by year for single user or 
 
 =head1 SYNOPSIS
 
- cpan-release-counts [--user NEILB] [--char =] [--width 40]
+ cpan-release-counts [--user NEILB] [--char =] [--width 40] [--year YYYY] [-monthly]
 
 =head1 DESCRIPTION
 
@@ -55,7 +65,7 @@ either across all users, or for a specific user.
 The most likely usage is to see your personal release history:
 
  % cpan-release-counts --user RJBS
-
+ 
  2003 (  4)
  2004 (137) #############
  2005 ( 87) ########
@@ -74,7 +84,7 @@ You can also change the character used when drawing the bars,
 and the maximum width used for the longest bar:
 
  % cpan-release-counts --char = --width 30
-
+ 
  1995 (  193)
  1996 (  634)
  1997 ( 1403) =
@@ -95,6 +105,24 @@ and the maximum width used for the longest bar:
  2012 (22669) ==========================
  2013 (25768) ==============================
  2014 ( 3502) ====
+
+If you use the B<--monthly> switch, you'll get the counts broken down by month.
+You can also restrict the data to a particular year:
+
+ % cpan-release-counts --year 2003 --monthly --width 40
+  
+ 200301 (769) ################################
+ 200302 (688) ############################
+ 200303 (880) ####################################
+ 200304 (812) ##################################
+ 200305 (821) ##################################
+ 200306 (902) #####################################
+ 200307 (913) ######################################
+ 200308 (907) #####################################
+ 200309 (955) ########################################
+ 200310 (841) ###################################
+ 200311 (785) ################################
+ 200312 (856) ###################################
 
 =head1 SEE ALSO
 
