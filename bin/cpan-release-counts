@@ -19,7 +19,7 @@ my $DIST_PREFIX;
 my %counts;
 
 GetOptions('user|u=s'  => \$USER,
-           'distprefix=s' => \$DIST_PREFIX,
+           'distprefix|d=s' => \$DIST_PREFIX,
            'monthly|m' => \$SHOW_MONTHS,
            'char|c=s'  => \$BAR_CHAR,
            'width|w=i' => \$MAX_BAR_SIZE,
@@ -71,6 +71,7 @@ cpan-release-counts - display graph of CPAN releases by year for single user or 
 =head1 SYNOPSIS
 
  cpan-release-counts [--user NEILB] [--char =] [--width 40] [--year YYYY] [-monthly]
+                     [--distprefix Moose]
 
 =head1 DESCRIPTION
 
@@ -79,7 +80,6 @@ either across all users, or for a specific user.
 The most likely usage is to see your personal release history:
 
  % cpan-release-counts --user RJBS
- 
  2003 (  4)
  2004 (137) #############
  2005 ( 87) ########
@@ -124,7 +124,6 @@ If you use the B<--monthly> switch, you'll get the counts broken down by month.
 You can also restrict the data to a particular year:
 
  % cpan-release-counts --year 2003 --monthly --width 40
-  
  200301 (769) ################################
  200302 (688) ############################
  200303 (880) ####################################
@@ -138,6 +137,20 @@ You can also restrict the data to a particular year:
  200311 (785) ################################
  200312 (856) ###################################
 
+You can use the B<--distprefix> (or B<-d>) option to only consider releases
+where the distributions name matches the given prefix:
+
+ % cpan-release-counts -d Moose
+ 2006 ( 25) ##
+ 2007 (117) ###########
+ 2008 (279) ############################
+ 2009 (491) ##################################################
+ 2010 (371) #####################################
+ 2011 (309) ###############################
+ 2012 (327) #################################
+ 2013 (299) ##############################
+ 2014 ( 46) ####
+
 =head1 SEE ALSO
 
 L<CPAN::ReleaseHistory> is used to get data for all CPAN releases.
@@ -149,6 +162,8 @@ L<https://github.com/neilbowers/CPAN-ReleaseHistory>
 =head1 AUTHOR
 
 Neil Bowers E<lt>neilb@cpan.orgE<gt>
+
+With contributions from Kent Fredric.
 
 =head1 COPYRIGHT AND LICENSE
 

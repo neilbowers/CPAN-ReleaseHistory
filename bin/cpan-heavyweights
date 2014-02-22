@@ -18,7 +18,7 @@ my $DIST_PREFIX;
 my %counts;
 
 GetOptions('top=i',     \$SHOW_TOP_N,
-           'distprefix=s' => \$DIST_PREFIX,
+           'distprefix|d=s' => \$DIST_PREFIX,
            'char|c=s',  \$BAR_CHAR,
            'width|w=i', \$MAX_BAR_SIZE,
            'year=i',    \$TARGET_YEAR,
@@ -62,6 +62,7 @@ cpan-heavyweights - display top N releasers to CPAN, optionally for a specific y
 =head1 SYNOPSIS
 
  cpan-heayweights [--year YYYY] [-top N] [--char =] [--width 40]
+                  [--disprefix Moose]
 
 =head1 DESCRIPTION
 
@@ -93,6 +94,22 @@ You can limit the graph to a particular year, and also specify how many people y
       KAKE (107) ##################
  ELIZABETH (105) ##################
 
+You can use the B<--distprefix> (or B<-d>) option to restrict the chart to
+releases where the distributions name matches the given prefix.
+For example, to see who's done the most Dancer-related releases:
+
+ % cpan-heavyweights -d Dancer
+   BIGPRESH (124) ########################################
+     SUKRIA ( 88) ############################
+     YANICK ( 80) #########################
+   XSAWYERX ( 79) #########################
+    AWNCORP ( 60) ###################
+   HORNBURG ( 54) #################
+   DAGOLDEN ( 44) ##############
+  IRONCAMEL ( 39) ############
+  HOBBESTIG ( 37) ###########
+      MICVU ( 36) ###########
+
 =head1 SEE ALSO
 
 L<CPAN::ReleaseHistory> is used to get data for all CPAN releases.
@@ -104,6 +121,8 @@ L<https://github.com/neilbowers/CPAN-ReleaseHistory>
 =head1 AUTHOR
 
 Neil Bowers E<lt>neilb@cpan.orgE<gt>
+
+With contributions from Kent Fredric
 
 =head1 COPYRIGHT AND LICENSE
 

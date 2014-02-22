@@ -1,5 +1,9 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.07 2014-02-22
+    - Added --distprefix (-d) option to cpan-release-counts
+      and cpan-heavyweights. Thanks to Kent Fredric for this.
+
 0.06 2014-02-21
     - Added --monthly option to cpan-release-counts
       Based on idea and patch from Kent Fredric.
