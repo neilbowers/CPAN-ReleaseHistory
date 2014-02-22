@@ -14,20 +14,34 @@ my $MAX_BAR_SIZE = 40;
 my $BAR_CHAR     = '#';
 my $iterator     = CPAN::ReleaseHistory->new()->release_iterator(well_formed => 1);
 my $TARGET_YEAR;
+my $DIST_PREFIX;
 my %counts;
 
 GetOptions('top=i',     \$SHOW_TOP_N,
+           'distprefix=s' => \$DIST_PREFIX,
            'char|c=s',  \$BAR_CHAR,
            'width|w=i', \$MAX_BAR_SIZE,
            'year=i',    \$TARGET_YEAR,
-          ) || die "usage: $0 [-top N] [-year YYYY] [-char <char>] [-width N]\n";
+          ) || die "usage: $0 [-top N] [-distprefix Some-Prefix] [-year YYYY] [-char <char>] [-width N]\n";
 
 while (my $release = $iterator->next_release) {
     my $year = (gmtime($release->timestamp))[5] + 1900;
     next if defined($TARGET_YEAR) && $year != $TARGET_YEAR;
+    next if $DIST_PREFIX && $release->distinfo->dist !~ qr/^\Q$DIST_PREFIX\E/;
     $counts{ $release->distinfo->cpanid }++;
 }
-die "No releases seen in $TARGET_YEAR\n" if defined($TARGET_YEAR) && keys(%counts) == 0;
+
+if ( keys(%counts) == 0 ) {
+    if ( defined($TARGET_YEAR) and defined($DIST_PREFIX) ) {
+        die "No releases seen in $TARGET_YEAR for $DIST_PREFIX\n";
+    }
+    if ( defined($TARGET_YEAR) ) {
+        die "No releases seen in $TARGET_YEAR\n";
+    }
+    if ( defined($DIST_PREFIX) ) {
+        die "No releases seen for $DIST_PREFIX\n";
+    }
+}
 
 my $max         = (sort { $b <=> $a } values %counts)[0];
 my $count_width = (sort { $b <=> $a } map { length($_) } values %counts)[0];
