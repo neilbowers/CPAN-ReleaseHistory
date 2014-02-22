@@ -15,19 +15,22 @@ my $SHOW_MONTHS  = 0;
 my $TARGET_YEAR;
 my $iterator     = CPAN::ReleaseHistory->new()->release_iterator(well_formed => 1);
 my $USER;
+my $DIST_PREFIX;
 my %counts;
 
 GetOptions('user|u=s'  => \$USER,
+           'distprefix=s' => \$DIST_PREFIX,
            'monthly|m' => \$SHOW_MONTHS,
            'char|c=s'  => \$BAR_CHAR,
            'width|w=i' => \$MAX_BAR_SIZE,
            'year|y=i'  => \$TARGET_YEAR,
-          ) || die "usage: $0 [-user PAUSE-ID] [-char <char>] [-width N]\n";
+          ) || die "usage: $0 [-user PAUSE-ID] [-distprefix Some-Prefix] [-char <char>] [-width N]\n";
 
 $USER = uc($USER) if defined($USER);
 
 while (my $release = $iterator->next_release) {
     next if $USER && $release->distinfo->cpanid ne $USER;
+    next if $DIST_PREFIX && $release->distinfo->dist !~ qr/^\Q$DIST_PREFIX\E/;
     my @ts    = gmtime($release->timestamp);
     my $year  = $ts[5] + 1900;
     next if defined($TARGET_YEAR) && $year != $TARGET_YEAR;
@@ -35,7 +38,18 @@ while (my $release = $iterator->next_release) {
     my $key   = $SHOW_MONTHS ? sprintf('%.4d%.2d', $year, $month) : $year;
     $counts{$key}++;
 }
-die "No releases seen for $USER\n" if defined($USER) && keys(%counts) == 0;
+
+if ( keys(%counts) == 0 ) {
+    if ( defined($USER) and defined($DIST_PREFIX) ) {
+        die "No releases seen for $USER/$DIST_PREFIX*";
+    }
+    if ( defined($USER) ) {
+        die "No releases seen for $USER/*";
+    }
+    if ( defined($DIST_PREFIX) ) {
+        die "No releases seen for */$DIST_PREFIX*";
+    }
+}
 
 my $max                    = (sort { $b <=> $a } values %counts)[0];
 my $count_width            = (sort { $b <=> $a } map { length($_) } values %counts)[0];
