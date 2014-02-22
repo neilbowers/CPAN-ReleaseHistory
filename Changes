@@ -1,5 +1,10 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.08 2014-02-22
+    - cpan-heavyweights: if you asked for the top N users, and the search
+      returned fewer than N users, you would get a load of warnings about
+      unefined values.
+
 0.07 2014-02-22
     - Added --distprefix (-d) option to cpan-release-counts
       and cpan-heavyweights. Thanks to Kent Fredric for this.

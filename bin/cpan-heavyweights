@@ -46,7 +46,8 @@ if ( keys(%counts) == 0 ) {
 my $max         = (sort { $b <=> $a } values %counts)[0];
 my $count_width = (sort { $b <=> $a } map { length($_) } values %counts)[0];
 my $scale       = $max < $MAX_BAR_SIZE ? 1 : $max / $MAX_BAR_SIZE;
-my @users       = (sort { $counts{$b} <=> $counts{$a} } keys %counts)[0..($SHOW_TOP_N-1)];
+my @users       = sort { $counts{$b} <=> $counts{$a} } keys %counts;
+   @users       = splice(@users, 0, $SHOW_TOP_N);
 my $user_width  = (sort { $b <=> $a } map { length($_) } @users)[0];
 
 
