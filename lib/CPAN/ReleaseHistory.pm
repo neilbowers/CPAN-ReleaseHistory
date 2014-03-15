@@ -28,6 +28,12 @@ has 'path' =>
      is      => 'rw',
     );
 
+has 'max_age' =>
+    (
+     is      => 'rw',
+     default => 3600,
+    );
+
 sub release_iterator
 {
     my $self = shift;
@@ -43,18 +49,23 @@ sub BUILD
     # If constructor didn't specify a local file, then mirror the file from CPAN
     if (not $self->path) {
         $self->path( catfile(File::HomeDir->my_dist_data( $DISTNAME, { create => 1 } ), $BASENAME) );
-        $self->_cache_file_if_needed();
     }
+
+    $self->_cache_file_if_needed();
 }
 
 sub _cache_file_if_needed
 {
     my $self    = shift;
+
+    my $mod_time = (stat($self->path))[9] || 0;
+    return if time - $mod_time > $self->max_age;
+
     my $options = {};
     my $ua      = HTTP::Tiny->new();
 
     if (-f $self->path) {
-        $options->{'If-Modified-Since'} = time2str( (stat($self->path))[9]);
+        $options->{'If-Modified-Since'} = time2str($mod_time);
     }
     my $response = $ua->get($self->url, $options);
 
