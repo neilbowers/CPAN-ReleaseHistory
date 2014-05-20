@@ -2,31 +2,26 @@ package CPAN::ReleaseHistory;
 
 use 5.006;
 use Moo;
-use File::HomeDir;
-use File::Spec::Functions 'catfile';
-use HTTP::Date qw(time2str);
-use HTTP::Tiny;
+use MooX::Role::CachedURL 0.06;
+
 use CPAN::DistnameInfo;
 use Carp;
-use File::Temp qw/ tempfile /;
-use PerlIO::gzip;
 use autodie qw(open);
 
 use CPAN::ReleaseHistory::Release;
 
-my $DISTNAME = 'CPAN-ReleaseHistory';
-my $BASENAME = 'release-history.txt';
+with 'MooX::Role::CachedURL';
 
-has 'url' =>
+has '+url' =>
     (
-     is      => 'ro',
-     default => sub { return 'http://gitpan.integra.net/backpan-index.gz' },
+     default => sub { return 'http://backpan.cpantesters.org/backpan-releases-by-dist-index.txt.gz' },
     );
 
-has 'path' =>
+has '+max_age' =>
     (
-     is      => 'rw',
+     default => sub { '1 day' },
     );
+
 
 sub release_iterator
 {
@@ -34,88 +29,6 @@ sub release_iterator
 
     require CPAN::ReleaseHistory::ReleaseIterator;
     return CPAN::ReleaseHistory::ReleaseIterator->new( history => $self, @_ );
-}
-
-sub BUILD
-{
-    my $self = shift;
-
-    # If constructor didn't specify a local file, then mirror the file from CPAN
-    if (not $self->path) {
-        $self->path( catfile(File::HomeDir->my_dist_data( $DISTNAME, { create => 1 } ), $BASENAME) );
-        $self->_cache_file_if_needed();
-    }
-}
-
-sub _cache_file_if_needed
-{
-    my $self    = shift;
-    my $options = {};
-    my $ua      = HTTP::Tiny->new();
-
-    if (-f $self->path) {
-        $options->{'If-Modified-Since'} = time2str( (stat($self->path))[9]);
-    }
-    my $response = $ua->get($self->url, $options);
-
-    return if $response->{status} == 304; # Not Modified
-
-    if ($response->{status} == 200) {
-        my ($fh, $filename) = tempfile();
-        print $fh $response->{content};
-        close($fh);
-        $self->_transform_and_cache($filename);
-        return;
-    }
-
-    croak("request for backpan-index failed: $response->{status} $response->{reason}");
-}
-
-sub _transform_and_cache
-{
-    my ($self, $filename) = @_;
-    my ($in_fh, $out_fh);
-    local $_;
-    my @lines;
-    my ($distinfo, $distname);
-
-    open($in_fh,  '<:gzip', $filename);
-    open($out_fh, '>',      $self->path);
-
-    LINE:
-    while (<$in_fh>) {
-        next LINE unless m!^authors/id/!;
-        next LINE if /\.(readme|meta) /;
-        next LINE if m!/CHECKSUMS !;
-        next LINE unless /^\S+\s+\S+\s+\S+/;
-
-        chomp;
-        s!^authors/id/!!;
-
-        my ($path, $time, $size) = split(/\s+/, $_);
-        $distinfo = CPAN::DistnameInfo->new($path);
-        $distname = defined($distinfo) && defined($distinfo->dist)
-                    ? $distinfo->dist
-                    : '';
-
-        push(@lines, [$distname, $path, $time, $size]);
-
-    }
-    close($in_fh);
-    unlink($filename);
-
-    foreach my $line (sort by_dist_then_date @lines) {
-        printf $out_fh "%s %d %d\n", $line->[1], $line->[2], $line->[3];
-    }
-
-    close($out_fh);
-}
-
-sub by_dist_then_date
-{
-    return $a->[0] ne $b->[0]
-           ? $a->[0] cmp $b->[0]
-           : $a->[2] <=> $b->[2];
 }
 
 1;
@@ -126,7 +39,7 @@ CPAN::ReleaseHistory - information about all files ever released to CPAN
 
 =head1 SYNOPSIS
 
-  use CPAN::ReleaseHistory 0.02;
+  use CPAN::ReleaseHistory 0.10;
 
   my $history  = CPAN::ReleaseHistory->new();
   my $iterator = $history->release_iterator();
@@ -140,13 +53,12 @@ CPAN::ReleaseHistory - information about all files ever released to CPAN
   
 =head1 DESCRIPTION
 
-B<NOTE>: this is very much an alpha release. Any and all feedback appreciated.
-
-The internal caching format changed in 0.02, so you should make sure you have
-at least 0.02, using the C<use> line shown in the SYNOPSIS.
-
 This module provides an iterator that can be used to look at every file
 that has ever been released to CPAN, regardless of whether it is still on CPAN.
+
+The BackPAN index used was changed in release 0.10, which resulted in the caching
+mechanism changing, so you should make sure you have at least version 0.10,
+as shown in the SYNOPSIS above.
 
 The C<$release> returned by the C<next_release()> method on the iterator
 is an instance of L<CPAN::ReleaseHistory::Release>. It has four methods:
@@ -238,17 +150,13 @@ This saves you from having to write code like the following:
     ...
  }
 
-=head1 NOTES
-
-At the moment this module will use up a lot of memory: it grabs the remote BackPAN index,
-extracts the data it needs into memory, sorts it, then writes it to the local cache.
-If this is a problem then I'll look at another way of doing it. If it's a problem for you,
-then you should look at L<BackPAN::Index>.
-
 =head1 SEE ALSO
 
 L<BackPAN::Index> - creates an SQLite database of the BackPAN index,
 and provides an interface for querying it.
+
+L<backpan.cpantesters.org|http://backpan.cpantesters.org> - the BackPAN site
+from where this module grabs the index.
 
 =head1 REPOSITORY
 
