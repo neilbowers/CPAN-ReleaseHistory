@@ -1,5 +1,10 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.11 2014-08-18
+    - Added a date() method to CPAN::ReleaseHistory::Release, as in so
+      many of the scripts I write, that's what I want to get from the
+      timestamp.
+
 0.10 2014-05-20
     - Switched to using the index file on the CPAN Testers BackPAN;
       this is generated hourly, and is already in the format we work

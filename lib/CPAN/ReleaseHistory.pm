@@ -61,7 +61,7 @@ mechanism changing, so you should make sure you have at least version 0.10,
 as shown in the SYNOPSIS above.
 
 The C<$release> returned by the C<next_release()> method on the iterator
-is an instance of L<CPAN::ReleaseHistory::Release>. It has four methods:
+is an instance of L<CPAN::ReleaseHistory::Release>. It has five methods:
 
 =over 4
 
@@ -77,6 +77,12 @@ Ie it is only created if you ask for it.
 =item timestamp
 
 An integer epoch-based timestamp.
+
+=item date
+
+An ISO-format date string (YYYY-MM-DD) for the timestamp in UTC
+(ie the date used by PAUSE and CPAN, rather than the time of release
+in your local timezone.
 
 =item size
 
