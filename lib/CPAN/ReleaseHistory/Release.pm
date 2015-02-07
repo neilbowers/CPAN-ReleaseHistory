@@ -28,7 +28,7 @@ sub _build_date
 
 =head1 NAME
 
-CPAN::ReleaseHistory::Release - Release information for CPAN::ReleaseHistory.
+CPAN::ReleaseHistory::Release - data object with information about one CPAN release
 
 =head1 DESCRIPTION
 

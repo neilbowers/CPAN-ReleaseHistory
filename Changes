@@ -1,5 +1,8 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.12 2015-02-07 NEILB
+    - Added pod for the two sub-classes. MANWAR++
+
 0.11 2014-08-18
     - Added a date() method to CPAN::ReleaseHistory::Release, as in so
       many of the scripts I write, that's what I want to get from the
