@@ -1,5 +1,8 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.13 2016-07-13 NEILB
+    - Added cpan-dist-counts script, prompted by a tweet from PJF.
+
 0.12 2015-02-07 NEILB
     - Added pod for the two sub-classes. MANWAR++
 
