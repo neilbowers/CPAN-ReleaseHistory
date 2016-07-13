@@ -9,15 +9,17 @@ use warnings;
 use CPAN::ReleaseHistory 0.03;
 use Getopt::Long;
 
-my $MAX_BAR_SIZE = 50;
-my $BAR_CHAR     = '#';
-my $SHOW_MONTHS  = 0;
+my $MAX_BAR_SIZE     = 50;
+my $BAR_CHAR         = '#';
+my $SHOW_MONTHS      = 0;
 my $TARGET_YEAR;
-my $iterator     = CPAN::ReleaseHistory->new()->release_iterator(well_formed => 1);
+my $NEWCPANISMS_ONLY = 0;
+my $iterator         = CPAN::ReleaseHistory->new()->release_iterator(well_formed => 1);
 my $USER;
 my $DIST_PREFIX;
 my %counts;
 my %data;
+my %seen;
 
 GetOptions('user|u=s'  => \$USER,
            'distprefix|d=s' => \$DIST_PREFIX,
@@ -25,19 +27,26 @@ GetOptions('user|u=s'  => \$USER,
            'char|c=s'  => \$BAR_CHAR,
            'width|w=i' => \$MAX_BAR_SIZE,
            'year|y=i'  => \$TARGET_YEAR,
+           'neo|n'     => \$NEWCPANISMS_ONLY,
           ) || die "usage: $0 [-user PAUSE-ID] [-distprefix Some-Prefix] [-char <char>] [-width N]\n";
 
 $USER = uc($USER) if defined($USER);
 
+RELEASE:
 while (my $release = $iterator->next_release) {
+    my $distname = $release->distinfo->dist;
     next if $USER && $release->distinfo->cpanid ne $USER;
-    next if $DIST_PREFIX && $release->distinfo->dist !~ qr/^\Q$DIST_PREFIX\E/;
+    next if $DIST_PREFIX && $distname !~ qr/^\Q$DIST_PREFIX\E/;
+    if ($NEWCPANISMS_ONLY) {
+        next RELEASE if $seen{ $distname };
+        $seen{$distname} = 1;
+    }
     my @ts    = gmtime($release->timestamp);
     my $year  = $ts[5] + 1900;
     next if defined($TARGET_YEAR) && $year != $TARGET_YEAR;
     my $month = $ts[4] + 1;
     my $key   = $SHOW_MONTHS ? sprintf('%.4d%.2d', $year, $month) : $year;
-    $data{$key}{$release->distinfo->dist}++;
+    $data{$key}{$distname}++;
 }
 
 foreach my $key (keys %data) {
@@ -76,7 +85,7 @@ cpan-dist-counts - display graph of different CPAN dists released by year for si
 =head1 SYNOPSIS
 
  cpan-dist-counts [--user NEILB] [--char =] [--width 40] [--year YYYY] [-monthly]
-                     [--distprefix Moose]
+                  [--neo | -n] [--distprefix Moose]
 
 =head1 DESCRIPTION
 
@@ -168,6 +177,26 @@ where the distribution's name matches the given prefix:
  2015 ( 65) ########################
  2016 ( 23) ########
 
+You can use the B<--neo> option to only count the initial
+releases of new distributions:
+
+ % cpan-dist-counts -n --user RJBS
+
+ 2003 ( 2) #
+ 2004 (33) ###############################
+ 2005 (12) ###########
+ 2006 (52) ##################################################
+ 2007 (29) ###########################
+ 2008 (46) ############################################
+ 2009 (51) #################################################
+ 2010 (29) ###########################
+ 2011 ( 7) ######
+ 2012 (10) #########
+ 2013 (16) ###############
+ 2014 ( 4) ###
+ 2015 (14) #############
+ 2016 ( 5) ####
+
 =head1 SEE ALSO
 
 L<CPAN::ReleaseHistory> is used to get data for all CPAN releases.
@@ -181,6 +210,8 @@ L<https://github.com/neilbowers/CPAN-ReleaseHistory>
 Neil Bowers E<lt>neilb@cpan.orgE<gt>
 
 Prompted by a tweet from Paul Fenwick.
+
+And the C<-neo> option was prompted by a request from RJBS.
 
 =head1 COPYRIGHT AND LICENSE
 

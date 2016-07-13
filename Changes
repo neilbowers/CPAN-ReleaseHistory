@@ -1,5 +1,9 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.14 2016-07-13 NEILB
+    - Added -neo option to cpan-dist-counts, prompted by
+      a question from RJBS.
+
 0.13 2016-07-13 NEILB
     - Added cpan-dist-counts script, prompted by a tweet from PJF.
 
