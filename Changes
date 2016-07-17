@@ -1,5 +1,10 @@
 Revision history for Perl module CPAN::ReleaseHistory
 
+0.15 2016-07-17 NEILB
+    - Fixed a bug: if you used --neo and --user together,
+      it would report the first release of a dist you did as a neocpanism,
+      even if someone else had already released it. RJBS++ for the PR.
+
 0.14 2016-07-13 NEILB
     - Added -neo option to cpan-dist-counts, prompted by
       a question from RJBS.
