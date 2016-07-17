@@ -35,12 +35,12 @@ $USER = uc($USER) if defined($USER);
 RELEASE:
 while (my $release = $iterator->next_release) {
     my $distname = $release->distinfo->dist;
-    next if $USER && $release->distinfo->cpanid ne $USER;
-    next if $DIST_PREFIX && $distname !~ qr/^\Q$DIST_PREFIX\E/;
     if ($NEWCPANISMS_ONLY) {
         next RELEASE if $seen{ $distname };
         $seen{$distname} = 1;
     }
+    next if $USER && $release->distinfo->cpanid ne $USER;
+    next if $DIST_PREFIX && $distname !~ qr/^\Q$DIST_PREFIX\E/;
     my @ts    = gmtime($release->timestamp);
     my $year  = $ts[5] + 1900;
     next if defined($TARGET_YEAR) && $year != $TARGET_YEAR;
